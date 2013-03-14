@@ -1,10 +1,10 @@
 package il.ac.huji.todolist;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import android.os.Bundle;
 import android.app.Activity;
-import android.content.Context;
 import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -20,7 +20,6 @@ public class TodoListManagerActivity extends Activity {
 
 	private CustomListAdapter _adapter;
 	private EditText _editNewItem;
-	private ArrayList <String> _items ;
 	private ListView _list;
 
 	@Override
@@ -29,9 +28,8 @@ public class TodoListManagerActivity extends Activity {
 		setContentView(R.layout.activity_todo_list_manager);
 		_editNewItem = (EditText) findViewById(R.id.edtNewItem);
 		_list = (ListView)findViewById(R.id.lstTodoItems);
-		_adapter = new CustomListAdapter(this,R.layout.row);
+		_adapter = new CustomListAdapter(this,new ArrayList<String>());
 		_list.setAdapter(_adapter);
-		_items = new ArrayList<String>();
 	}
 
 	@Override
@@ -47,15 +45,13 @@ public class TodoListManagerActivity extends Activity {
 		switch (item.getItemId()){
 		case R.id.menuItemAdd : {
 			String added = _editNewItem.getText().toString();
-			_items.add(added);
 			_adapter.add(added);
 			break;
 		}
 		case R.id.menuItemDelete :{
 			int positionDeleted = _list.getSelectedItemPosition();
-			if(positionDeleted>0){
-				String rem = _items.remove(positionDeleted);
-				_adapter.remove(rem);
+			if(positionDeleted!=-1){
+				_adapter.remove(_adapter.getItem(positionDeleted));
 			}
 			break;
 		}
@@ -67,16 +63,18 @@ public class TodoListManagerActivity extends Activity {
 	private class CustomListAdapter extends ArrayAdapter<String> {
 
 
-		public CustomListAdapter(Context context, int textViewResourceId) {
-			super(context, textViewResourceId);
+		public CustomListAdapter(TodoListManagerActivity activity, List<String> courses) {	
+			super(activity, android.R.layout.simple_list_item_1, courses);
+			
 		}
 
 		@Override
 		public View getView(int position, View v, ViewGroup parent)    {
+			String strItem = getItem(position);
 			LayoutInflater inflater = LayoutInflater.from(getContext());
 			View view = inflater.inflate(R.layout.row, null);
 			TextView task = (TextView) view.findViewById(R.id.textTask);
-			task.setText(_items.get(position));
+			task.setText(strItem);
 			if(position%2==0){
 				task.setTextColor(Color.RED);
 			}	
