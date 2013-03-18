@@ -31,7 +31,11 @@ public class TodoListManagerActivity extends Activity {
 	private ListView _list;
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy",Locale.US);
 	private static final String STRING_FOR_NO_DATE = "No due date";
-	private static final String CALL = "Call: ";
+	private static final String CALL = "Call ";
+
+	public static final String DUE_DATE_EXTRA_STR = "dueDate";
+	public static final String TITLE_EXTRA_STR = "title";
+
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -67,15 +71,13 @@ public class TodoListManagerActivity extends Activity {
 	protected void onActivityResult(int reqCode, int resCode, Intent data) {
 		if (reqCode==CODE_FOR_ADD_NEW && resCode == RESULT_OK){
 			if(data!=null){
-				String title = data.getStringExtra("title");
+				String title = data.getStringExtra(TITLE_EXTRA_STR);
 				Date date = null;
-				Object dateObj = data.getSerializableExtra("dueDate");
+				Object dateObj = data.getSerializableExtra(DUE_DATE_EXTRA_STR);
 				if(dateObj!=null){
 					date = (Date) dateObj;
 				}
 				_adapter.add(new TaskDatePair(title,date));
-				// TODO delete syso
-				System.out.println("added new to adapter");
 			}
 		}
 	}
@@ -88,13 +90,12 @@ public class TodoListManagerActivity extends Activity {
 		String taskStr = taskPair.get_task();
 		menu.setHeaderTitle(taskStr);
 		MenuItem callItem = menu.findItem(R.id.menuItemCall);
-		if(!taskStr.contains(CALL)){
+		if(taskStr==null || !taskStr.contains(CALL)){
 			callItem.setVisible(false);
 		}
 		else{
 			callItem.setTitle(taskStr);
 		}
-		
 		super.onCreateContextMenu(menu,v,info);
 	}
 
@@ -109,7 +110,7 @@ public class TodoListManagerActivity extends Activity {
 		}
 		case R.id.menuItemCall:{
 			String gotFromTask = taskPair.get_task();
-			if(gotFromTask.startsWith(CALL) && gotFromTask.length() > CALL.length()){
+			if(gotFromTask!=null && gotFromTask.startsWith(CALL)){
 				gotFromTask = gotFromTask.substring(CALL.length());
 				Intent dial = new Intent(Intent.ACTION_DIAL,Uri.parse("tel:"+gotFromTask));
 				startActivity(dial);

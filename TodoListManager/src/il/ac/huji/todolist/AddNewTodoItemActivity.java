@@ -30,8 +30,8 @@ public class AddNewTodoItemActivity extends Activity {
 				cal.set(Calendar.YEAR,year);
 				cal.set(Calendar.MONTH, month);
 				cal.set(Calendar.DAY_OF_MONTH,day);
-				result.putExtra("dueDate",cal.getTime());
-				result.putExtra("title",editTextNewItem.getText().toString());
+				result.putExtra(TodoListManagerActivity.DUE_DATE_EXTRA_STR,cal.getTime());
+				result.putExtra(TodoListManagerActivity.TITLE_EXTRA_STR,editTextNewItem.getText().toString());
 				setResult(RESULT_OK,result);
 				finish();
 			}
