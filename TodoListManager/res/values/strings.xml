@@ -2,10 +2,11 @@
 <resources>
 
     <string name="app_name">TodoListManager</string>
-    <string name="action_settings">Settings</string>
-    <string name="hello_world">Hello world!</string>
-    <string name="menuItemAdd">“@+id/menuItemAdd”</string>
     <string name="add_string">Add</string>
-    <string name="delete_string">Delete</string>
+    <string name="title_activity_add_new_todo_item">Add New Item</string>
+    <string name="strcancel">Cancel</string>
+    <string name="strok">OK</string>
+    <string name="deleteitem">Delete Item</string>
+    <string name="menucall">Call</string>
 
 </resources>
