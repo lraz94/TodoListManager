@@ -89,11 +89,11 @@ public class TodoListManagerActivity extends Activity {
 		TaskDatePair taskPair = _adapter.getItem(pos);
 		String taskStr = taskPair.get_task();
 		menu.setHeaderTitle(taskStr);
-		MenuItem callItem = menu.findItem(R.id.menuItemCall);
 		if(taskStr==null || !taskStr.contains(CALL)){
-			callItem.setVisible(false);
+			menu.removeItem(R.id.menuItemCall);
 		}
 		else{
+			MenuItem callItem = menu.findItem(R.id.menuItemCall);
 			callItem.setTitle(taskStr);
 		}
 		super.onCreateContextMenu(menu,v,info);
