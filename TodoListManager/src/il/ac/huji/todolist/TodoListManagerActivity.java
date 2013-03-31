@@ -1,12 +1,10 @@
 package il.ac.huji.todolist;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Activity;
@@ -29,7 +27,10 @@ public class TodoListManagerActivity extends Activity {
 	public static final int CODE_FOR_ADD_NEW = 100;
 	private CustomListAdapter _adapter;
 	private ListView _list;
-	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy",Locale.US);
+	private TodoDAL _todoDal;
+	
+	
+	public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy",Locale.US);
 	private static final String STRING_FOR_NO_DATE = "No due date";
 	private static final String CALL = "Call ";
 
@@ -41,10 +42,16 @@ public class TodoListManagerActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_todo_list_manager);
+		
+		// init todoDal
+		_todoDal = new TodoDAL(this);
+				
 		_list = (ListView)findViewById(R.id.lstTodoItems);
-		_adapter = new CustomListAdapter(this,new ArrayList<TaskDatePair>());
+		List<ITodoItem> stored = _todoDal.all();
+		System.out.println("Stored tasks are: "+stored);
+		_adapter = new CustomListAdapter(this,stored);
 		_list.setAdapter(_adapter);
-		registerForContextMenu(_list);
+		registerForContextMenu(_list);		
 	}
 
 	@Override
@@ -77,7 +84,10 @@ public class TodoListManagerActivity extends Activity {
 				if(dateObj!=null){
 					date = (Date) dateObj;
 				}
-				_adapter.add(new TaskDatePair(title,date));
+				TodoDAL.TaskDatePair newTask = new TodoDAL.TaskDatePair(title,date);
+				_adapter.add(newTask);
+				boolean fromInserst = _todoDal.insert(newTask);
+				System.out.println("Got from insert: "+fromInserst);
 			}
 		}
 	}
@@ -86,8 +96,8 @@ public class TodoListManagerActivity extends Activity {
 	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo info) {
 		getMenuInflater().inflate(R.menu.ctxmenuextended, menu);
 		int pos = ((AdapterContextMenuInfo) info).position;
-		TaskDatePair taskPair = _adapter.getItem(pos);
-		String taskStr = taskPair.get_task();
+		ITodoItem taskPair = _adapter.getItem(pos);
+		String taskStr = taskPair.getTitle();
 		menu.setHeaderTitle(taskStr);
 		if(taskStr==null || !taskStr.contains(CALL)){
 			menu.removeItem(R.id.menuItemCall);
@@ -102,14 +112,16 @@ public class TodoListManagerActivity extends Activity {
 	public boolean onContextItemSelected(MenuItem item) {
 		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
 		int pos = info.position;
-		TaskDatePair taskPair = _adapter.getItem(pos);
+		ITodoItem taskPair = _adapter.getItem(pos);
 		switch (item.getItemId()){
 		case R.id.menuItemDelete:{
 			_adapter.remove(taskPair);
+			boolean fromDelete = _todoDal.delete(taskPair);
+			System.out.println("Got from delete: "+fromDelete);
 			break;
 		}
 		case R.id.menuItemCall:{
-			String gotFromTask = taskPair.get_task();
+			String gotFromTask = taskPair.getTitle();
 			if(gotFromTask!=null && gotFromTask.startsWith(CALL)){
 				gotFromTask = gotFromTask.substring(CALL.length());
 				Intent dial = new Intent(Intent.ACTION_DIAL,Uri.parse("tel:"+gotFromTask));
@@ -122,21 +134,21 @@ public class TodoListManagerActivity extends Activity {
 	}
 
 
-	private class CustomListAdapter extends ArrayAdapter<TaskDatePair> {
-		public CustomListAdapter(TodoListManagerActivity activity, List<TaskDatePair> tasks) {	
+	private class CustomListAdapter extends ArrayAdapter<ITodoItem> {
+		public CustomListAdapter(TodoListManagerActivity activity, List<ITodoItem> tasks) {	
 			super(activity, android.R.layout.simple_list_item_1, tasks);
 
 		}
 
 		@Override
 		public View getView(int position, View v, ViewGroup parent)    {
-			TaskDatePair item = getItem(position);
+			ITodoItem item = getItem(position);
 			LayoutInflater inflater = LayoutInflater.from(getContext());
 			View view = inflater.inflate(R.layout.row, null);
 			TextView title = (TextView) view.findViewById(R.id.txtTodoTitle);
-			title.setText(item.get_task());
+			title.setText(item.getTitle());
 			TextView dateTxt = (TextView) view.findViewById(R.id.txtTodoDueDate);
-			Date dateGot = item.get_date();
+			Date dateGot = item.getDueDate();
 			if(dateGot!=null){
 				dateTxt.setText(DATE_FORMAT.format(dateGot));
 				// this date
@@ -157,31 +169,17 @@ public class TodoListManagerActivity extends Activity {
 					title.setTextColor(Color.RED);
 					dateTxt.setTextColor(Color.RED);
 				}
+				else{
+					title.setTextColor(Color.BLACK);
+					dateTxt.setTextColor(Color.BLACK);					
+				}
 			}
 			else{
 				dateTxt.setText(STRING_FOR_NO_DATE);
+				title.setTextColor(Color.BLACK);
+				dateTxt.setTextColor(Color.BLACK);
 			}
 			return view;
-		}
-
-	}
-
-	private static class TaskDatePair{
-
-		private Date _date;
-		private String _task;
-
-		public TaskDatePair(String task,Date date){
-			_task = task;
-			_date = date;
-		}
-
-		public Date get_date() {
-			return _date;
-		}
-
-		public String get_task() {
-			return _task;
 		}
 	}
 }
