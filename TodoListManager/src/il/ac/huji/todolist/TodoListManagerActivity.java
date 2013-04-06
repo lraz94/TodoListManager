@@ -8,6 +8,7 @@ import java.util.Locale;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.Color;
 import android.view.ContextMenu;
@@ -16,9 +17,12 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -112,7 +116,7 @@ public class TodoListManagerActivity extends Activity {
 	public boolean onContextItemSelected(MenuItem item) {
 		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
 		int pos = info.position;
-		ITodoItem taskPair = _adapter.getItem(pos);
+		final ITodoItem taskPair = _adapter.getItem(pos);
 		switch (item.getItemId()){
 		case R.id.menuItemDelete:{
 			_adapter.remove(taskPair);
@@ -127,6 +131,43 @@ public class TodoListManagerActivity extends Activity {
 				Intent dial = new Intent(Intent.ACTION_DIAL,Uri.parse("tel:"+gotFromTask));
 				startActivity(dial);
 			}
+			break;
+		}
+		case R.id.updatedebug:{
+			final Dialog dialog = new Dialog(this);
+			dialog.setContentView(R.layout.dialogforupdatedebug);
+			final DatePicker datePicker = (DatePicker) dialog.findViewById(R.id.datePickerUpdateDebug);
+			Button ok = (Button) dialog.findViewById(R.id.button1);
+			ok.setOnClickListener(new OnClickListener() {
+				public void onClick(View v) {
+					Calendar cal = Calendar.getInstance();
+					int year = datePicker.getYear();
+					int month = datePicker.getMonth();
+					int day = datePicker.getDayOfMonth();
+					cal.clear();
+					cal.set(Calendar.YEAR,year);
+					cal.set(Calendar.MONTH, month);
+					cal.set(Calendar.DAY_OF_MONTH,day);
+					ITodoItem update = new TodoDAL.TaskDatePair(taskPair.getTitle(),cal.getTime());
+					_adapter.remove(taskPair);
+					_adapter.add(update);
+					boolean fromUpdate = _todoDal.update(update);
+					System.out.println("Got from update: "+fromUpdate);
+					dialog.dismiss();
+				}
+			});
+			Button sendNull = (Button) dialog.findViewById(R.id.button2);
+			sendNull.setOnClickListener(new OnClickListener() {
+				public void onClick(View v) {
+					ITodoItem update = new TodoDAL.TaskDatePair(taskPair.getTitle(),null);
+					_adapter.remove(taskPair);
+					_adapter.add(update);
+					boolean fromUpdate = _todoDal.update(update);
+					System.out.println("Got from update: "+fromUpdate);
+					dialog.dismiss();
+				}
+			});
+			dialog.show();
 			break;
 		}
 		}

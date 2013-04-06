@@ -1,18 +1,15 @@
 package il.ac.huji.todolist;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
+import org.json.JSONObject;
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.Parse;
-//import com.parse.ParseACL;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
-//import com.parse.PushService;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -30,8 +27,6 @@ public class TodoDAL {
 		_db = helper.getWritableDatabase();
 		Parse.initialize(context, context.getResources().getString(R.string.parseApplication),
 				context.getResources().getString(R.string.clientKey)); 
-		//		PushService.subscribe(context, "", TodoListManagerActivity.class);	// TODO PushService needed?
-		//		PushService.setDefaultPushCallback(context, TodoListManagerActivity.class);
 		ParseUser.enableAutomaticUser();	
 	}
 
@@ -61,15 +56,13 @@ public class TodoDAL {
 			privObj.put("due", itemDueDate.getTime());
 		}
 		else{
-			privObj.put("due", (Long) null);
+			privObj.put("due", JSONObject.NULL);
 		}
-		//		privObj.setACL(new ParseACL(ParseUser.getCurrentUser())); // TODO setACL is needed?
 		privObj.saveInBackground();
 		System.out.println("Parser: inserted parseObj: title="+privObj.getString("title")+" | due="+privObj.getLong("due"));
-		return dbGood; // && parseGood
+		return dbGood; 
 	}
 
-	// TODO need to test especially parse isn't duplicated
 	public boolean update(ITodoItem todoItem) { 
 		final String itemTitle = todoItem.getTitle();
 		if(itemTitle==null){
@@ -104,7 +97,7 @@ public class TodoDAL {
 							parseObj.put("due", itemDueDate.getTime());
 						}
 						else{
-							parseObj.put("due", (Long) null);
+							parseObj.put("due", JSONObject.NULL);
 
 						}
 						parseObj.saveInBackground();
@@ -116,8 +109,7 @@ public class TodoDAL {
 				}
 			}
 		});
-
-		return dbGood; // && parseGood
+		return dbGood; 
 	}
 
 	public boolean delete(ITodoItem todoItem) {
@@ -149,24 +141,28 @@ public class TodoDAL {
 				}
 			}
 		});
-		return dbGood; // && parseGood
+		return dbGood;
 	}
 
 	public List<ITodoItem> all() {
 		ArrayList<ITodoItem> ret = new ArrayList<ITodoItem>();
 		Cursor cursor = _db.query("todo", new String[] { "title", "due" },null, null, null, null, null);
-		if (cursor.moveToFirst()) {
-			do {
-				String title = cursor.getString(0);
-				Date due = null;
-				try{
-					Long dueLong = cursor.getLong(1);
-					if(dueLong!=null && dueLong > 0){
-						due= new Date(dueLong);
-					}
-				}catch(Exception e){}
-				ret.add(new TaskDatePair(title,due));
-			} while (cursor.moveToNext());
+		try{
+			if (cursor.moveToFirst()) {
+				do {
+					String title = cursor.getString(0);
+					Date due = null;
+					try{
+						Long dueLong = cursor.getLong(1);
+						if(dueLong!=null && dueLong > 0){
+							due= new Date(dueLong);
+						}
+					}catch(Exception e){}
+					ret.add(new TaskDatePair(title,due));
+				} while (cursor.moveToNext());
+			}
+		}finally{
+			cursor.close();
 		}
 
 		// DEBUG parse
@@ -189,12 +185,11 @@ public class TodoDAL {
 			}
 		});
 
-
 		return ret;
 	}
 
 	public static class TaskDatePair implements ITodoItem{
-		private static SimpleDateFormat FORMAT = new SimpleDateFormat("dd/MM/yyyy",Locale.US); // same as TodoListManagerActivity
+
 		private String _task;
 		private Date _date;
 
@@ -217,7 +212,7 @@ public class TodoDAL {
 		public String toString(){
 			String dateFormated = null;
 			if(_date!=null){
-				dateFormated = FORMAT.format(_date);
+				dateFormated = Long.toString(_date.getTime());
 			}
 			return "Title: "+_task+" | Due date: "+dateFormated;
 		}

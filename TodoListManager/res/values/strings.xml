@@ -9,5 +9,8 @@
     <string name="menucall">Call</string>
     <string name="parseApplication">aku6l2rcTHPqnjfyU6tETsnONmHvDTDV30rlQzRo</string>
     <string name="clientKey">Wiz7LeRziKSESCzvzIE1eFGaaReFAiczlYWylqYK</string>
+    <string name="update_due_date">Update Due Date</string>
+    <string name="sendnewdate">Send New Due Date</string>
+    <string name="sendnulldate">Send null Due Date</string>
         
 </resources>
