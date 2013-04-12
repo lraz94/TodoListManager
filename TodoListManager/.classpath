@@ -4,9 +4,9 @@
 	<classpathentry kind="src" path="gen"/>
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
-	<classpathentry exported="true" kind="lib" path="C:/Users/Meytal/Documents/lior/android and post pc/workspace/ParseStarterProject/libs/Parse-1.2.3.jar">
+	<classpathentry exported="true" kind="lib" path="C:/Users/Meytal/Documents/lior/android and post pc/workspace/TodoListManager/libs/Parse-1.2.3.jar">
 		<attributes>
-			<attribute name="javadoc_location" value="file:/C:/Users/Meytal/Documents/lior/android%20and%20post%20pc/workspace/ParseStarterProject/libs/Parse-1.2.3-javadoc/"/>
+			<attribute name="javadoc_location" value="file:/C:/Users/Meytal/Documents/lior/android%20and%20post%20pc/workspace/TodoListManager/libs/Parse-1.2.3-javadoc/"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="output" path="bin/classes"/>
