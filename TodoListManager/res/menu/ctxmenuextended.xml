@@ -1,9 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
-    <item android:id="@+id/menuItemDelete" android:title="@string/deleteitem" android:visible="true"></item>
-    <item android:id="@+id/menuItemCall" android:title="@string/menucall" android:visible="true"></item>
-    <item android:id="@+id/updatedebug" android:title="@string/update_due_date" android:visible="true"></item>
-   
-    
+
+    <item
+        android:id="@+id/menuItemDelete"
+        android:title="@string/deleteitem"
+        android:visible="true">
+    </item>
+    <item
+        android:id="@+id/menuItemThumbnail"
+        android:title="@string/add_thumbnail"
+        android:visible="true">
+    </item>
+    <item
+        android:id="@+id/menuItemCall"
+        android:title="@string/menucall"
+        android:visible="true">
+    </item>
+    <item
+        android:id="@+id/menuItemUpdate"
+        android:title="@string/update_due_date"
+        android:visible="true">
+    </item>
 
 </menu>

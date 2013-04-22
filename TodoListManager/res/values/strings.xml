@@ -12,5 +12,18 @@
     <string name="update_due_date">Update Due Date</string>
     <string name="sendnewdate">Send New Due Date</string>
     <string name="sendnulldate">Send null Due Date</string>
+    <string name="twitsSelected">Add selected twits to your List!</string>
+    <string name="twit_preference_key">twit_key</string>
+    <string name="twit_preference_title">Search for twits with:</string>
+    <string name="twit_preference_summary">Eneter search word for twits or for Hashtag start with #</string>
+    <string name="preference_category_title">Settings</string>
+    <string name="preference_category_summary">Twits search information</string>
+    <string name="preferences_str">Preferences</string>
+    <string name="flicker_api_key">6d482cc252fe0d356f52db470f99ce82</string>
+    <string name="search">Search!</string>
+    <string name="add_thumbnail">Add Thumbnail</string>
+    <string name="imageViewContent">Image view for Flicker thumbail</string>
+    
+    
         
 </resources>

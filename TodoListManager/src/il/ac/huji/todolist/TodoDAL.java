@@ -6,6 +6,7 @@ import java.util.List;
 import org.json.JSONObject;
 import com.parse.FindCallback;
 import com.parse.Parse;
+import com.parse.ParseFile;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
@@ -14,6 +15,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.AsyncTask;
 
 
 public class TodoDAL {
@@ -30,55 +32,63 @@ public class TodoDAL {
 		ParseUser.enableAutomaticUser();	
 	}
 
-	public boolean insert(ITodoItem todoItem) {
-		final String itemTitle = todoItem.getTitle();
+	public SQLiteDatabase getDBforExit(){
+		return _db;
+	}
+
+	public boolean insert(final TodoItem todoItem) {
+		String itemTitle = todoItem.getTitle();
 		if(itemTitle==null){
 			return false;
 		}
-		final Date itemDueDate = todoItem.getDueDate();
-
 		// to db
-		ContentValues task = new ContentValues(); 
-		task.put("title",itemTitle);
-		if(itemDueDate != null ){
-			task.put("due", itemDueDate.getTime());
-		}
-		else{
-			task.put("due", (Long) null);
-		}
+		ContentValues task = getContentValuesByTodoItem(todoItem,itemTitle);
 		long retDb = _db.insert("todo", null,task);
 		boolean dbGood = retDb!=-1;
 
 		// to parse
-		ParseObject privObj = new ParseObject("todo");
-		privObj.put("title",itemTitle);
+		ParseObject parseObj = new ParseObject("todo");
+		parseObj.put("title",itemTitle);
+		Date itemDueDate = todoItem.getDueDate();
 		if(itemDueDate!=null){
-			privObj.put("due", itemDueDate.getTime());
+			parseObj.put("due", itemDueDate.getTime());
 		}
 		else{
-			privObj.put("due", JSONObject.NULL);
+			parseObj.put("due", JSONObject.NULL);
 		}
-		privObj.saveInBackground();
-		System.out.println("Parser: inserted parseObj: title="+privObj.getString("title")+" | due="+privObj.getLong("due"));
+		parseObj.put("parseFile", JSONObject.NULL); // new items or always w/o thumbnale
+		parseObj.saveInBackground();
+		System.out.println("Parser: inserted parseObj: title="+parseObj.getString("title")+" | due="+parseObj.getLong("due"));
 		return dbGood; 
 	}
 
-	public boolean update(ITodoItem todoItem) { 
+	private ContentValues getContentValuesByTodoItem(TodoItem todoItem,String title){
+		ContentValues toReturn = new ContentValues(); 
+		toReturn.put("title",title);
+		Date itemDueDate = todoItem.getDueDate();
+		if(itemDueDate != null ){
+			toReturn.put("due", itemDueDate.getTime());
+		}
+		else{
+			toReturn.put("due", (Long) null);
+		}
+		String thumbPath = todoItem.getThumbnailPath();
+		if(thumbPath != null){ // null in Inserted objects
+			toReturn.put("thumbpath", thumbPath);
+		}
+		else{
+			toReturn.put("thumbpath", (String) null);
+		}
+		return toReturn;
+	}
+
+	public boolean updateDate(final TodoItem todoItem) { 
 		final String itemTitle = todoItem.getTitle();
 		if(itemTitle==null){
 			return false;
 		}
-		final Date itemDueDate = todoItem.getDueDate();
-
 		// to db
-		ContentValues task = new ContentValues(); 
-		task.put("title",itemTitle);
-		if(itemDueDate!=null){
-			task.put("due", itemDueDate.getTime());
-		}
-		else{
-			task.put("due",(Long) null);
-		}
+		ContentValues task = getContentValuesByTodoItem(todoItem,itemTitle);
 		int count = _db.update("todo",task, "title = \""+itemTitle+"\"",null);
 		boolean dbGood = count!=0;
 
@@ -93,26 +103,80 @@ public class TodoDAL {
 				else if(!matches.isEmpty()){
 					for(ParseObject parseObj : matches){
 						parseObj.remove("due");
-						if(itemDueDate!=null){
+						Date itemDueDate = todoItem.getDueDate();
+						if(itemDueDate != null ){
 							parseObj.put("due", itemDueDate.getTime());
 						}
 						else{
 							parseObj.put("due", JSONObject.NULL);
-
 						}
+						// keep ParseFile as is
 						parseObj.saveInBackground();
-						System.out.println("Parser: updated parseObj to: title="+parseObj.getString("title")+" | due="+parseObj.getLong("due"));
+						System.out.println("Parser: updated date for parseObj to: title="+parseObj.getString("title")+" | due="+
+								parseObj.getLong("due")+" | parseFile="+parseObj.getParseFile("parseFile"));
 					}
 				}
 				else{
-					System.out.println("Parser: requested to update non existing item title: "+itemTitle);
+					System.out.println("Parser: requested to update date for non existing item title: "+itemTitle);
 				}
 			}
 		});
 		return dbGood; 
 	}
 
-	public boolean delete(ITodoItem todoItem) {
+	public boolean updateThmbnale(final TodoItem todoItem) { 
+		final String itemTitle = todoItem.getTitle();
+		if(itemTitle==null){
+			return false;
+		}
+		// to db
+		ContentValues task = getContentValuesByTodoItem(todoItem,itemTitle);
+		int count = _db.update("todo",task, "title = \""+itemTitle+"\"",null);
+		boolean dbGood = count!=0;
+
+		// to parse
+		new UpdateParseAsyncTask(itemTitle,todoItem).execute();
+		return dbGood; 
+	}
+
+	private static class UpdateParseAsyncTask  extends AsyncTask<Void,Void, Void>{
+		private String _itemTitle;
+		private TodoItem _todo;
+
+		public UpdateParseAsyncTask(String title,TodoItem todo){
+			_itemTitle = title;
+			_todo = todo;
+		}
+		
+		@Override
+		protected Void doInBackground(Void... params) {
+			try {
+				ParseQuery query = new ParseQuery("todo");
+				query.whereEqualTo("title", _itemTitle);
+				List<ParseObject> list = query.find();
+				if(!list.isEmpty()){
+					for(final ParseObject parseObj : list){
+						parseObj.remove("parseFile");
+						ParseFile parse = new ParseFile(_todo.getBytesOfThumbnale());
+						parse.save();
+						parseObj.put("parseFile", parse);
+						parseObj.save();
+						// keep date as is
+						System.out.println("Parser: updated parseFile parseObj to: title="+parseObj.getString("title")+" | due="+
+								parseObj.getLong("due")+" | parseFile="+parseObj.getParseFile("parseFile"));
+					}
+				}
+				else{
+					System.out.println("Parser: requested to update file of non existing item title: "+_itemTitle);
+				}
+			} catch (ParseException e) {}
+			return null;
+		}
+
+
+	}
+
+	public boolean delete(TodoItem todoItem) {
 		final String itemTitle = todoItem.getTitle();
 		if(itemTitle==null){
 			return false;
@@ -133,7 +197,8 @@ public class TodoDAL {
 				else if(!matches.isEmpty()){
 					for(ParseObject parseObj : matches){
 						parseObj.deleteInBackground();
-						System.out.println("Parser: deleted parseObj of: title="+parseObj.getString("title")+" | due="+parseObj.getLong("due"));
+						System.out.println("Parser: deleted parseObj of: title="+parseObj.getString("title")+" | due="+parseObj.getLong("due")
+								+" | parseFile="+parseObj.getParseFile("parseFile"));
 					}
 				}
 				else{
@@ -144,9 +209,9 @@ public class TodoDAL {
 		return dbGood;
 	}
 
-	public List<ITodoItem> all() {
-		ArrayList<ITodoItem> ret = new ArrayList<ITodoItem>();
-		Cursor cursor = _db.query("todo", new String[] { "title", "due" },null, null, null, null, null);
+	public List<TodoItem> all() {
+		ArrayList<TodoItem> ret = new ArrayList<TodoItem>();
+		Cursor cursor = _db.query("todo", new String[] { "title", "due","thumbpath" },null, null, null, null, null);
 		try{
 			if (cursor.moveToFirst()) {
 				do {
@@ -158,63 +223,13 @@ public class TodoDAL {
 							due= new Date(dueLong);
 						}
 					}catch(Exception e){}
-					ret.add(new TaskDatePair(title,due));
+					String thumbPath = cursor.getString(2);
+					ret.add(new TodoItem(title,due,thumbPath));
 				} while (cursor.moveToNext());
 			}
 		}finally{
 			cursor.close();
 		}
-
-		// DEBUG parse
-		ParseQuery query = new ParseQuery("todo");
-		query.findInBackground(new FindCallback() {
-			public void done(List<ParseObject> matches,ParseException e) {
-				if (e != null){
-					e.printStackTrace();
-				}
-				else{
-					if(matches.isEmpty()){
-						System.out.println("Parser: no parsed items stored");
-					}
-					else{
-						for(ParseObject parseObj : matches){
-							System.out.println("Parser: got parsed: title="+parseObj.getString("title")+" | due="+parseObj.getLong("due"));
-						}
-					}
-				}
-			}
-		});
-
 		return ret;
-	}
-
-	public static class TaskDatePair implements ITodoItem{
-
-		private String _task;
-		private Date _date;
-
-		public TaskDatePair(String task,Date date){
-			_task = task;
-			_date = date;
-		}
-
-		@Override
-		public String getTitle() {
-			return _task;
-		}
-
-		@Override
-		public Date getDueDate() {
-			return _date;
-		}
-
-		// for DEBUG
-		public String toString(){
-			String dateFormated = null;
-			if(_date!=null){
-				dateFormated = Long.toString(_date.getTime());
-			}
-			return "Title: "+_task+" | Due date: "+dateFormated;
-		}
 	}
 }
