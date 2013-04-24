@@ -4,6 +4,9 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+// DB helper for todo items. DB called "todo_db", table called "todo" with:
+// "_id" autoincremented , "title" and "thumbpath" as text and due as integer (long) 
+// Does nothing on upgrade
 public class TodoListManagerDatabaseHelper extends SQLiteOpenHelper {
 
 	public TodoListManagerDatabaseHelper(Context context) {

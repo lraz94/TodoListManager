@@ -4,6 +4,9 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+// DB helper for twits. interest only in the id of a twit. DB called "twits_id", table called "twits" with
+// one column "id" which is a number represents a unique twit. 
+// Does nothing on upgrade
 public class TwitsIdDatabaseHelper extends SQLiteOpenHelper {
 
 	public TwitsIdDatabaseHelper(Context context) {

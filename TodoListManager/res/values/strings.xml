@@ -10,8 +10,6 @@
     <string name="parseApplication">aku6l2rcTHPqnjfyU6tETsnONmHvDTDV30rlQzRo</string>
     <string name="clientKey">Wiz7LeRziKSESCzvzIE1eFGaaReFAiczlYWylqYK</string>
     <string name="update_due_date">Update Due Date</string>
-    <string name="sendnewdate">Send New Due Date</string>
-    <string name="sendnulldate">Send null Due Date</string>
     <string name="twitsSelected">Add selected twits to your List!</string>
     <string name="twit_preference_key">twit_key</string>
     <string name="twit_preference_title">Search for twits with:</string>
@@ -23,7 +21,5 @@
     <string name="search">Search!</string>
     <string name="add_thumbnail">Add Thumbnail</string>
     <string name="imageViewContent">Image view for Flicker thumbail</string>
-    
-    
-        
+
 </resources>
