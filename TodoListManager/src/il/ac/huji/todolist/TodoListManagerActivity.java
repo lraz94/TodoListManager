@@ -123,17 +123,12 @@ public class TodoListManagerActivity extends Activity {
 	// menu have add a new item ability and show preferences
 	public boolean onOptionsItemSelected(MenuItem item) {
 		super.onOptionsItemSelected(item);   
-		switch (item.getItemId()){
-		case R.id.menuItemAdd : {
+		if (item.getItemId() == R.id.menuItemAdd) {
 			Intent intent = new Intent(this, AddUpdateTodoItemActivity.class);
 			startActivityForResult(intent, CODE_FOR_ADD_NEW);
-			break;
-		}
-		case R.id.menuItemPreferences:{
-			Intent intent = new Intent(this, PrefsActivity.class); 
+		} else if (item.getItemId() == R.id.menuItemPreferences) {
+			Intent intent = new Intent(this, PrefsActivity.class);
 			startActivityForResult(intent, CODE_FOR_PREFRENCES);
-			break;
-		}
 		}
 		return true;
 	}
@@ -184,30 +179,26 @@ public class TodoListManagerActivity extends Activity {
 	// all since "requery" for Corser if depracted.
 	public void insertTodo(TodoItem todo) {
 		_adapter.add(todo);
-		boolean fromInserst = _todoDal.insert(todo);
-		System.out.println("Got from insert at TodoDAL: "+fromInserst);
+		_todoDal.insert(todo);
 	}
 
 	public void updateTodoDate(TodoItem todo){
 		int position = _adapter.getPosition(todo);
 		_adapter.remove(todo);
 		_adapter.insert(todo,position);
-		boolean fromUpdate = _todoDal.updateDate(todo);
-		System.out.println("Got from update date at TodoDAL: "+fromUpdate);
+		_todoDal.updateDate(todo);
 	}
 
 	public void updateTodoThumbnale(TodoItem todo){
 		int position = _adapter.getPosition(todo);
 		_adapter.remove(todo);
 		_adapter.insert(todo,position);
-		boolean fromUpdate = _todoDal.updateThmbnale(todo);
-		System.out.println("Got from update thumbnale at TodoDAL: "+fromUpdate);
+		_todoDal.updateThmbnale(todo);
 	}
 
 	public void deleteTodo(TodoItem todo) {
 		_adapter.remove(todo);
-		boolean fromDelete = _todoDal.delete(todo);
-		System.out.println("Got from delete at TodoDAL: "+fromDelete);
+		_todoDal.delete(todo);
 	}
 
 	// load bitmap from path on the device
@@ -245,12 +236,9 @@ public class TodoListManagerActivity extends Activity {
 		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
 		int pos = info.position;
 		final TodoItem taskPair = _adapter.getItem(pos);
-		switch (item.getItemId()){
-		case R.id.menuItemDelete:{
+		if (item.getItemId() == R.id.menuItemDelete) {
 			deleteTodo(taskPair);
-			break;
-		}
-		case R.id.menuItemCall:{
+		} else if (item.getItemId() == R.id.menuItemCall) {
 			String gotFromTask = taskPair.getTitle();
 			if(gotFromTask!=null && gotFromTask.startsWith(CALL)){
 				gotFromTask = gotFromTask.substring(CALL.length());
@@ -258,9 +246,7 @@ public class TodoListManagerActivity extends Activity {
 				Intent dial = new Intent(Intent.ACTION_DIAL,Uri.parse("tel:"+gotFromTask));
 				startActivity(dial);
 			}
-			break;
-		}
-		case R.id.menuItemUpdate:{
+		} else if (item.getItemId() == R.id.menuItemUpdate) {
 			Intent intent = new Intent(this, AddUpdateTodoItemActivity.class);
 			intent.putExtra("text",taskPair.getTitle());
 			String thumbPath = taskPair.getThumbnailPath();
@@ -269,9 +255,7 @@ public class TodoListManagerActivity extends Activity {
 			}
 			// launch intent to update
 			startActivityForResult(intent, CODE_FOR_ADD_NEW);
-			break;
-		}
-		case R.id.menuItemThumbnail:{
+		} else if (item.getItemId() == R.id.menuItemThumbnail) {
 			// Show dialog which will triger Flicker search after inserting non empry search String+hitting Ok
 			final Dialog dialog = new Dialog(this);
 			dialog.setContentView(R.layout.flickerdialog);
@@ -329,8 +313,6 @@ public class TodoListManagerActivity extends Activity {
 				}
 			});
 			dialog.show();
-			break;
-		}
 		}
 		return true;
 	}

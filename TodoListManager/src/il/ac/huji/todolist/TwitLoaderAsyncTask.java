@@ -138,7 +138,7 @@ public class TwitLoaderAsyncTask extends AsyncTask<Void,Integer, ArrayList<Strin
 		_progressDialog.dismiss();
 		if(result==null){
 			// errors on connection
-			Toast.makeText(_ownerActivity, "Sorry, errors on connecting to Twiter",Toast.LENGTH_LONG).show();
+			Toast.makeText(_ownerActivity, "Sorry, no match or might be errors on the net...",Toast.LENGTH_LONG).show();
 			return;
 		}
 		if(! result.isEmpty()){
@@ -187,7 +187,6 @@ public class TwitLoaderAsyncTask extends AsyncTask<Void,Integer, ArrayList<Strin
 				forURl = "%23"+forURl.substring(1);
 			}
 			String urlTxt = "http://search.twitter.com/search.json?q="+forURl+"&rpp=100&include_entities=true";
-			System.out.println("url for: "+urlTxt); // TODO remove syso
 			URL url = new URL(urlTxt);
 			HttpURLConnection conn = (HttpURLConnection)url.openConnection();
 			InputStream in = new BufferedInputStream(conn.getInputStream());
